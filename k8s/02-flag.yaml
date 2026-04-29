@@ -1,0 +1,84 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: flag-service
+  namespace: toggle-master
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: flag-service
+  template:
+    metadata:
+      labels:
+        app: flag-service
+    spec:
+      serviceAccountName: togglemaster-sa
+      containers:
+      - name: flag-service
+        image: 848779020010.dkr.ecr.us-east-1.amazonaws.com/flag-service:c6d9d6179c04ded55e8ec6d799dcd83817f7b1b8
+        resources:
+          requests:
+            cpu: "250m"    
+            memory: "128Mi"
+          limits:
+            cpu: "500m"   
+            memory: "256Mi"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: http
+          initialDelaySeconds: 20
+          periodSeconds: 60
+          timeoutSeconds: 5
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: http
+          initialDelaySeconds: 15
+          periodSeconds: 15
+          timeoutSeconds: 3
+          failureThreshold: 2   
+        ports:
+        - name: http 
+          containerPort: 8002
+        env:
+        - name: PORT
+          value: "8002"
+        - name: AUTH_SERVICE_URL
+          value: "http://auth-service"
+        
+        # --- Montagem do Banco ---
+        - name: DB_USER
+          valueFrom: { configMapKeyRef: { name: app-config, key: db-user } }
+        - name: DB_PASSWORD
+          valueFrom: { secretKeyRef: { name: app-secrets, key: db-password } }
+        - name: DB_HOST
+          valueFrom: { configMapKeyRef: { name: app-config, key: flag-db-host } }
+        - name: DB_PORT
+          valueFrom: { configMapKeyRef: { name: app-config, key: db-port } }
+        - name: DB_NAME
+          valueFrom: { configMapKeyRef: { name: app-config, key: flag-db-name } }
+        - name: DATABASE_URL
+          value: "postgres://$(DB_USER):$(DB_PASSWORD)@$(DB_HOST):$(DB_PORT)/$(DB_NAME)"
+        # --- OpenTelemetry ---
+        - name: OTEL_EXPORTER_OTLP_ENDPOINT
+          valueFrom: { configMapKeyRef: { name: app-config, key: otel-collector-grpc } }
+        - name: OTEL_SERVICE_NAME
+          value: "flag-service"
+        - name: OTEL_RESOURCE_ATTRIBUTES
+          value: "service.namespace=toggle-master"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: flag-service
+  namespace: toggle-master
+spec:
+  type: ClusterIP
+  selector:
+    app: flag-service
+  ports:
+    - port: 80
+      targetPort: 8002

@@ -1,0 +1,76 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: analytics-service
+  namespace: toggle-master
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: analytics-service
+  template:
+    metadata:
+      labels:
+        app: analytics-service
+    spec:
+      serviceAccountName: togglemaster-sa
+      containers:
+      - name: analytics-service
+        image: 848779020010.dkr.ecr.us-east-1.amazonaws.com/analytics-service:b2e9857ac48497d7411380d79c204324b844817e
+        resources:
+          requests:
+            cpu: "250m"   
+            memory: "128Mi"
+          limits:
+            cpu: "500m"
+            memory: "256Mi"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: http
+          initialDelaySeconds: 20
+          periodSeconds: 60
+          timeoutSeconds: 5
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: http
+          initialDelaySeconds: 15
+          periodSeconds: 15
+          timeoutSeconds: 3
+          failureThreshold: 2
+        ports:
+        - name: http 
+          containerPort: 8005
+        env:
+        - name: PORT
+          value: "8005"
+        
+        # AWS Configs
+        - name: AWS_REGION
+          valueFrom: { configMapKeyRef: { name: app-config, key: aws-region } }
+        - name: AWS_SQS_URL
+          valueFrom: { configMapKeyRef: { name: app-config, key: sqs-url } }
+        - name: AWS_DYNAMODB_TABLE
+          valueFrom: { configMapKeyRef: { name: app-config, key: dynamo-table } }
+        # --- OpenTelemetry ---
+        - name: OTEL_EXPORTER_OTLP_ENDPOINT
+          valueFrom: { configMapKeyRef: { name: app-config, key: otel-collector-grpc } }
+        - name: OTEL_SERVICE_NAME
+          value: "analytics-service"
+        - name: OTEL_RESOURCE_ATTRIBUTES
+          value: "service.namespace=toggle-master"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: analytics-service
+  namespace: toggle-master
+spec:
+  type: ClusterIP
+  selector:
+    app: analytics-service
+  ports:
+    - port: 80
+      targetPort: 8005

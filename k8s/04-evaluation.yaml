@@ -1,0 +1,95 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: evaluation-service
+  namespace: toggle-master
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: evaluation-service
+  template:
+    metadata:
+      labels:
+        app: evaluation-service
+    spec:
+      serviceAccountName: togglemaster-sa
+      containers:
+      - name: evaluation-service
+        image: 848779020010.dkr.ecr.us-east-1.amazonaws.com/evaluation-service:d95b916964537ec2598ee908a3b1aa679c2967d4
+        resources:
+          requests:
+            cpu: "250m"    
+            memory: "128Mi"
+          limits:
+            cpu: "500m"   
+            memory: "256Mi"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: http
+          initialDelaySeconds: 20
+          periodSeconds: 60
+          timeoutSeconds: 5
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: http
+          initialDelaySeconds: 15
+          periodSeconds: 15
+          timeoutSeconds: 3
+          failureThreshold: 2    
+        ports:
+        - name: http 
+          containerPort: 8004
+        env:
+        - name: PORT
+          value: "8004"
+        # URLs de Serviço (Porta 80 padrão)
+        - name: FLAG_SERVICE_URL
+          value: "http://flag-service"
+        - name: TARGETING_SERVICE_URL
+          value: "http://targeting-service"
+        - name: SERVICE_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: app-secrets
+              key: service-api-key
+        
+        # Redis (ElastiCache)
+        - name: REDIS_CACHE_ADDR
+          valueFrom:
+            configMapKeyRef:
+              name: app-config
+              key: REDIS_ADDR
+        - name: REDIS_PORT
+          valueFrom: { configMapKeyRef: { name: app-config, key: redis-port } }
+        - name: REDIS_URL
+          value: "redis://$(REDIS_CACHE_ADDR):$(REDIS_PORT)"
+
+        # Credenciais AWS Academy
+        - name: AWS_REGION
+          valueFrom: { configMapKeyRef: { name: app-config, key: aws-region } }
+        - name: AWS_SQS_URL
+          valueFrom: { configMapKeyRef: { name: app-config, key: sqs-url } }
+        # --- OpenTelemetry ---
+        - name: OTEL_EXPORTER_OTLP_ENDPOINT
+          valueFrom: { configMapKeyRef: { name: app-config, key: otel-collector-grpc } }
+        - name: OTEL_SERVICE_NAME
+          value: "evaluation-service"
+        - name: OTEL_RESOURCE_ATTRIBUTES
+          value: "service.namespace=toggle-master"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: evaluation-service
+  namespace: toggle-master
+spec:
+  type: ClusterIP
+  selector:
+    app: evaluation-service
+  ports:
+    - port: 80
+      targetPort: 8004
