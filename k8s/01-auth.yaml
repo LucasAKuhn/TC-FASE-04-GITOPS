@@ -16,7 +16,7 @@ spec:
       serviceAccountName: togglemaster-sa
       containers:
       - name: auth-service
-        image: 848779020010.dkr.ecr.us-east-1.amazonaws.com/auth-service:c6d9d6179c04ded55e8ec6d799dcd83817f7b1b8
+        image: 797561896734.dkr.ecr.us-east-1.amazonaws.com/auth-service:c38e1ca05bd917412b177c15a97721c5ad73121c
         resources:
           requests:
             cpu: "250m"    
