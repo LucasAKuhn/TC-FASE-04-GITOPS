@@ -294,8 +294,10 @@ resource "aws_secretsmanager_secret" "app_secrets" {
 resource "aws_secretsmanager_secret_version" "app_secrets_version" {
   secret_id     = aws_secretsmanager_secret.app_secrets.id
   secret_string = jsonencode({
-    "db-password" = var.db_password
-    "master-key"  = var.master_key
+    "db-password"           = var.db_password
+    "master-key"            = var.master_key
+    "service-api-key"       = var.service_api_key
+    "new-relic-license-key" = var.new_relic_license_key
   })
 }
 
@@ -381,7 +383,19 @@ resource "helm_release" "loki" {
     { name = "test.enabled",                                   value = "false" },
     { name = "singleBinary.resources.requests.cpu",            value = "100m" },
     { name = "singleBinary.resources.requests.memory",         value = "256Mi" },
-    { name = "singleBinary.resources.limits.memory",           value = "512Mi" }
+    { name = "singleBinary.resources.limits.memory",           value = "512Mi" },
+    { name = "singleBinary.persistence.enabled",               value = "false" }
+  ]
+
+  values = [<<-EOT
+singleBinary:
+  extraVolumeMounts:
+    - name: loki-storage
+      mountPath: /var/loki
+  extraVolumes:
+    - name: loki-storage
+      emptyDir: {}
+EOT
   ]
 
   depends_on = [module.eks]
@@ -450,11 +464,11 @@ config:
     loki:
       endpoint: "http://loki.monitoring.svc.cluster.local:3100/loki/api/v1/push"
 
-    # Traces → New Relic (descomentar quando a API key estiver disponível)
-    # otlphttp/newrelic:
-    #   endpoint: "https://otlp.nr-data.net"
-    #   headers:
-    #     api-key: "$${NEW_RELIC_LICENSE_KEY}"
+    # Traces → New Relic 
+    otlphttp/newrelic:
+      endpoint: "https://otlp.nr-data.net:4318"
+      headers:
+        api-key: "${var.new_relic_license_key}"
 
     debug:
       verbosity: basic
@@ -472,7 +486,7 @@ config:
       traces:
         receivers: [otlp]
         processors: [memory_limiter, batch]
-        exporters: [debug]
+        exporters: [otlphttp/newrelic, debug]
 EOT
   ]
 

@@ -30,3 +30,10 @@ variable "service_api_key" {
   sensitive   = true
   # Sem default — exige injecao via TF_VAR_service_api_key
 }
+
+variable "new_relic_license_key" {
+  description = "A chave de ingestão (License Key) do New Relic. Passe via $env:TF_VAR_new_relic_license_key"
+  type        = string
+  sensitive   = true
+  default     = ""
+}
