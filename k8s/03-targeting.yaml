@@ -16,7 +16,7 @@ spec:
       serviceAccountName: togglemaster-sa
       containers:
       - name: targeting-service
-        image: 797561896734.dkr.ecr.us-east-1.amazonaws.com/targeting-service:829b62aef2145b5c5682da9b6921a3f021b0aa86
+        image: 797561896734.dkr.ecr.us-east-1.amazonaws.com/targeting-service:c38e1ca05bd917412b177c15a97721c5ad73121c
         resources:
           requests:
             cpu: "250m"    
