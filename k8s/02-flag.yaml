@@ -14,9 +14,11 @@ spec:
         app: flag-service
     spec:
       serviceAccountName: togglemaster-sa
+      imagePullSecrets:
+        - name: ecr-registry-secret
       containers:
       - name: flag-service
-        image: 797561896734.dkr.ecr.us-east-1.amazonaws.com/flag-service:c38e1ca05bd917412b177c15a97721c5ad73121c
+        image: 211797838481.dkr.ecr.us-east-1.amazonaws.com/flag-service:latest
         resources:
           requests:
             cpu: "250m"    

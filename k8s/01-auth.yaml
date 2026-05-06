@@ -14,9 +14,11 @@ spec:
         app: auth-service
     spec:
       serviceAccountName: togglemaster-sa
+      imagePullSecrets:
+        - name: ecr-registry-secret
       containers:
       - name: auth-service
-        image: 797561896734.dkr.ecr.us-east-1.amazonaws.com/auth-service:6bb5a30402bd6171f0aebe25691938b6d4234bfb
+        image: 211797838481.dkr.ecr.us-east-1.amazonaws.com/auth-service:latest
         resources:
           requests:
             cpu: "250m"    
