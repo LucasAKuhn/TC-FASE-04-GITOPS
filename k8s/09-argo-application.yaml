@@ -8,7 +8,7 @@ metadata:
 spec:
   project: default
   source:
-    repoURL: https://github.com/julianopoklen/TC-FASE-04-GITOPS.git
+    repoURL: https://github.com/LucasAKuhn/TC-FASE-04-GITOPS.git
     targetRevision: HEAD
     path: k8s
   destination:
