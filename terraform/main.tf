@@ -514,12 +514,12 @@ metadata:
   namespace: toggle-master
 data:
   # Hosts RDS e Redis (Gerados dinamicamente via IaC AWS)
-  auth-db-host: "$${module.database.postgres_endpoints[0]}"
-  flag-db-host: "$${module.database.postgres_endpoints[1]}"
-  targeting-db-host: "$${module.database.postgres_endpoints[2]}"
-  
+  auth-db-host: "${module.database.postgres_endpoints[0]}"
+  flag-db-host: "${module.database.postgres_endpoints[1]}"
+  targeting-db-host: "${module.database.postgres_endpoints[2]}"
+
   # --- CACHE ---
-  REDIS_ADDR: "$${module.database.redis_endpoint}"
+  REDIS_ADDR: "${module.database.redis_endpoint}"
   
   # Nomes dos Databases
   auth-db-name: "auth_db"
