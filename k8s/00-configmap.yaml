@@ -34,5 +34,5 @@ data:
   redis-port: "6379"
 
   # OpenTelemetry Collector Endpoints (namespace monitoring)
-  otel-collector-grpc: "otel-collector.monitoring.svc.cluster.local:4317"
-  otel-collector-http: "otel-collector.monitoring.svc.cluster.local:4318"
+  otel-collector-grpc: "otel-collector-opentelemetry-collector.monitoring.svc.cluster.local:4317"
+  otel-collector-http: "http://otel-collector-opentelemetry-collector.monitoring.svc.cluster.local:4318"
