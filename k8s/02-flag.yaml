@@ -66,7 +66,9 @@ spec:
           value: "postgres://$(DB_USER):$(DB_PASSWORD)@$(DB_HOST):$(DB_PORT)/$(DB_NAME)"
         # --- OpenTelemetry ---
         - name: OTEL_EXPORTER_OTLP_ENDPOINT
-          valueFrom: { configMapKeyRef: { name: app-config, key: otel-collector-grpc } }
+          valueFrom: { configMapKeyRef: { name: app-config, key: otel-collector-http } }
+        - name: OTEL_EXPORTER_OTLP_INSECURE
+          value: "true"
         - name: OTEL_SERVICE_NAME
           value: "flag-service"
         - name: OTEL_RESOURCE_ATTRIBUTES

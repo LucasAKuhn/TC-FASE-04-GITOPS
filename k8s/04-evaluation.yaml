@@ -77,7 +77,9 @@ spec:
           valueFrom: { configMapKeyRef: { name: app-config, key: sqs-url } }
         # --- OpenTelemetry ---
         - name: OTEL_EXPORTER_OTLP_ENDPOINT
-          valueFrom: { configMapKeyRef: { name: app-config, key: otel-collector-grpc } }
+          valueFrom: { configMapKeyRef: { name: app-config, key: otel-collector-http } }
+        - name: OTEL_EXPORTER_OTLP_INSECURE
+          value: "true"
         - name: OTEL_SERVICE_NAME
           value: "evaluation-service"
         - name: OTEL_RESOURCE_ATTRIBUTES
