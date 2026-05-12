@@ -18,7 +18,7 @@ spec:
         - name: ecr-registry-secret
       containers:
       - name: flag-service
-        image: 211797838481.dkr.ecr.us-east-1.amazonaws.com/flag-service:latest
+        image: 735355200877.dkr.ecr.us-east-1.amazonaws.com/flag-service:latest
         resources:
           requests:
             cpu: "250m"    
