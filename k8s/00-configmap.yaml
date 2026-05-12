@@ -11,12 +11,12 @@ metadata:
   namespace: toggle-master
 data:
   # Hosts RDS e Redis (Gerados dinamicamente via IaC AWS)
-  auth-db-host: "rds-db-auth-service.czwzzmbvmsao.us-east-1.rds.amazonaws.com"
-  flag-db-host: "rds-db-flag-service.czwzzmbvmsao.us-east-1.rds.amazonaws.com"
-  targeting-db-host: "rds-db-targeting-service.czwzzmbvmsao.us-east-1.rds.amazonaws.com"
+  auth-db-host: "rds-db-auth-service.couleuctqkh3.us-east-1.rds.amazonaws.com"
+  flag-db-host: "rds-db-flag-service.couleuctqkh3.us-east-1.rds.amazonaws.com"
+  targeting-db-host: "rds-db-targeting-service.couleuctqkh3.us-east-1.rds.amazonaws.com"
 
   # --- CACHE ---
-  REDIS_ADDR: "elastic-cache-evaluation-service.heoiyh.0001.use1.cache.amazonaws.com"
+  REDIS_ADDR: "elastic-cache-evaluation-service.kvxafg.0001.use1.cache.amazonaws.com"
   
   # Nomes dos Databases
   auth-db-name: "auth_db"
