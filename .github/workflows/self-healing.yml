@@ -1,0 +1,55 @@
+name: Self-Healing - Auto Restart Deployments
+
+on:
+  workflow_dispatch:
+    inputs:
+      reason:
+        description: 'Motivo do self-healing (ex: CPU alta no ToggleMaster)'
+        required: false
+        default: 'Alerta de CPU alta detectado'
+  repository_dispatch:
+    types: [grafana-alert]
+
+jobs:
+  restart-deployments:
+    runs-on: ubuntu-latest
+    name: Reiniciar deployments do toggle-master
+
+    steps:
+      - name: Configurar credenciais AWS
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
+          aws-region: us-east-1
+
+      - name: Configurar kubectl
+        run: |
+          aws eks update-kubeconfig --region us-east-1 --name tm-eks-cluster-01
+
+      - name: Mostrar pods atuais (antes do restart)
+        run: |
+          echo "=== PODS ANTES DO SELF-HEALING ==="
+          kubectl get pods -n toggle-master
+
+      - name: Executar rollout restart
+        run: |
+          echo "=== Iniciando Self-Healing: reiniciando deployments ==="
+          kubectl rollout restart deployment -n toggle-master
+          echo "=== Restart disparado com sucesso ==="
+
+      - name: Aguardar rollout completar
+        run: |
+          echo "=== Aguardando pods estabilizarem ==="
+          kubectl rollout status deployment/auth-service -n toggle-master --timeout=120s
+          kubectl rollout status deployment/flag-service -n toggle-master --timeout=120s
+          kubectl rollout status deployment/evaluation-service -n toggle-master --timeout=120s
+          kubectl rollout status deployment/targeting-service -n toggle-master --timeout=120s
+          kubectl rollout status deployment/analytics-service -n toggle-master --timeout=120s
+
+      - name: Mostrar pods após o restart
+        run: |
+          echo "=== PODS APÓS O SELF-HEALING ==="
+          kubectl get pods -n toggle-master
+          echo "=== Self-Healing concluído com sucesso ==="
