@@ -18,7 +18,7 @@ spec:
         - name: ecr-registry-secret
       containers:
       - name: auth-service
-        image: 735355200877.dkr.ecr.us-east-1.amazonaws.com/auth-service:latest
+        image: 735355200877.dkr.ecr.us-east-1.amazonaws.com/auth-service:31397738404cae10fef670f5c5679284cc37f38e
         resources:
           requests:
             cpu: "250m"    
