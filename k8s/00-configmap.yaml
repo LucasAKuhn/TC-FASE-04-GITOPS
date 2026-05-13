@@ -35,4 +35,4 @@ data:
 
   # OpenTelemetry Collector Endpoints (namespace monitoring)
   otel-collector-grpc: "otel-collector-opentelemetry-collector.monitoring.svc.cluster.local:4317"
-  otel-collector-http: "otel-collector-opentelemetry-collector.monitoring.svc.cluster.local:4318"
+  otel-collector-http: "http://otel-collector-opentelemetry-collector.monitoring.svc.cluster.local:4318"
