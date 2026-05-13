@@ -50,6 +50,11 @@ spec:
           value: "8002"
         - name: AUTH_SERVICE_URL
           value: "http://auth-service"
+        - name: SERVICE_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: app-secrets
+              key: service-api-key
         
         # --- Montagem do Banco ---
         - name: DB_USER

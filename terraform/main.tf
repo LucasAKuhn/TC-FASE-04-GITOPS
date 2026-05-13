@@ -2,7 +2,7 @@ terraform {
   required_version = ">= 1.5.0"
 
   backend "s3" {
-    bucket       = "tc4-togglemaster-lucas"
+    bucket       = "tc4-togglemaster-anielle"
     key          = "fase4/terraform.tfstate"
     region       = "us-east-1"
     use_lockfile = true
@@ -527,7 +527,7 @@ data:
   targeting-db-name: "targeting_db"
 
   # Configurações AWS Gerais
-  sqs-url: "https://sqs.us-east-1.amazonaws.com/797561896734/analytics-service-sqs"
+  sqs-url: "https://sqs.us-east-1.amazonaws.com/735355200877/analytics-service-sqs"
   dynamo-table: "ToggleMasterAnalytics"
   aws-region: "us-east-1"
   
@@ -546,81 +546,81 @@ EOT
 
 # Inicializa as tabelas lógicas nos bancos RDS através de um Job executado
 # de dentro do cluster EKS (evitando bloqueios de VPC/Security Groups locais)
-# resource "kubernetes_job_v1" "db_init" {
-#   metadata {
-#     name      = "db-init-job"
-#     namespace = "default"
-#   }
-#   spec {
-#     template {
-#       metadata {
-#         labels = {
-#           app = "db-init"
-#         }
-#       }
-#       spec {
-#         container {
-#           name    = "psql-runner"
-#           image   = "postgres:latest"
-#           command = ["/bin/sh", "-c"]
-#           args    = [
-#             <<-EOF
-#             export PGPASSWORD='${var.db_password}'
-#             echo "[AUTH-SERVICE] Criando Banco..."
-#             psql -h ${module.database.postgres_endpoints[0]} -U postgres -d postgres -c 'CREATE DATABASE auth_db;' || true
-#             psql -h ${module.database.postgres_endpoints[0]} -U postgres -d auth_db -c "
-#               CREATE TABLE IF NOT EXISTS api_keys (
-#                   id SERIAL PRIMARY KEY,
-#                   name VARCHAR(100) NOT NULL,
-#                   key_hash VARCHAR(64) NOT NULL UNIQUE,
-#                   is_active BOOLEAN DEFAULT true,
-#                   created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
-#               );
-#             "
-#
-#             echo "[FLAG-SERVICE] Criando Banco..."
-#             psql -h ${module.database.postgres_endpoints[1]} -U postgres -d postgres -c 'CREATE DATABASE flag_db;' || true
-#             psql -h ${module.database.postgres_endpoints[1]} -U postgres -d flag_db -c "
-#               CREATE TABLE IF NOT EXISTS flags (
-#                   id SERIAL PRIMARY KEY,
-#                   name VARCHAR(100) UNIQUE NOT NULL,
-#                   description TEXT,
-#                   is_enabled BOOLEAN NOT NULL DEFAULT false,
-#                   created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-#                   updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
-#               );
-#               CREATE OR REPLACE FUNCTION trigger_set_timestamp() RETURNS TRIGGER AS \$\$ BEGIN NEW.updated_at = NOW(); RETURN NEW; END; \$\$ LANGUAGE plpgsql;
-#               DROP TRIGGER IF EXISTS set_timestamp ON flags;
-#               CREATE TRIGGER set_timestamp BEFORE UPDATE ON flags FOR EACH ROW EXECUTE PROCEDURE trigger_set_timestamp();
-#             "
-#
-#             echo "[TARGETING-SERVICE] Criando Banco..."
-#             psql -h ${module.database.postgres_endpoints[2]} -U postgres -d postgres -c 'CREATE DATABASE targeting_db;' || true
-#             psql -h ${module.database.postgres_endpoints[2]} -U postgres -d targeting_db -c "
-#               CREATE TABLE IF NOT EXISTS targeting_rules (
-#                   id SERIAL PRIMARY KEY,
-#                   flag_name VARCHAR(100) UNIQUE NOT NULL,
-#                   is_enabled BOOLEAN NOT NULL DEFAULT true,
-#                   rules JSONB NOT NULL,
-#                   created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-#                   updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
-#               );
-#               CREATE OR REPLACE FUNCTION trigger_set_timestamp() RETURNS TRIGGER AS \$\$ BEGIN NEW.updated_at = NOW(); RETURN NEW; END; \$\$ LANGUAGE plpgsql;
-#               DROP TRIGGER IF EXISTS set_timestamp ON targeting_rules;
-#               CREATE TRIGGER set_timestamp BEFORE UPDATE ON targeting_rules FOR EACH ROW EXECUTE PROCEDURE trigger_set_timestamp();
-#             "
-#             EOF
-#           ]
-#         }
-#         restart_policy = "Never"
-#       }
-#     }
-#     backoff_limit = 4
-#   }
-#
-#   wait_for_completion = true
-#   depends_on = [
-#     module.database,
-#     module.eks
-#   ]
-# }
+resource "kubernetes_job_v1" "db_init" {
+  metadata {
+    name      = "db-init-job"
+    namespace = "default"
+  }
+  spec {
+    template {
+      metadata {
+        labels = {
+          app = "db-init"
+        }
+      }
+      spec {
+        container {
+          name    = "psql-runner"
+          image   = "postgres:latest"
+          command = ["/bin/sh", "-c"]
+          args    = [
+            <<-EOF
+            export PGPASSWORD='${var.db_password}'
+            echo "[AUTH-SERVICE] Criando Banco..."
+            psql -h ${module.database.postgres_endpoints[0]} -U postgres -d postgres -c 'CREATE DATABASE auth_db;' || true
+            psql -h ${module.database.postgres_endpoints[0]} -U postgres -d auth_db -c "
+              CREATE TABLE IF NOT EXISTS api_keys (
+                  id SERIAL PRIMARY KEY,
+                  name VARCHAR(100) NOT NULL,
+                  key_hash VARCHAR(64) NOT NULL UNIQUE,
+                  is_active BOOLEAN DEFAULT true,
+                  created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+              );
+            "
+
+            echo "[FLAG-SERVICE] Criando Banco..."
+            psql -h ${module.database.postgres_endpoints[1]} -U postgres -d postgres -c 'CREATE DATABASE flag_db;' || true
+            psql -h ${module.database.postgres_endpoints[1]} -U postgres -d flag_db -c "
+              CREATE TABLE IF NOT EXISTS flags (
+                  id SERIAL PRIMARY KEY,
+                  name VARCHAR(100) UNIQUE NOT NULL,
+                  description TEXT,
+                  is_enabled BOOLEAN NOT NULL DEFAULT false,
+                  created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+                  updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+              );
+              CREATE OR REPLACE FUNCTION trigger_set_timestamp() RETURNS TRIGGER AS \$\$ BEGIN NEW.updated_at = NOW(); RETURN NEW; END; \$\$ LANGUAGE plpgsql;
+              DROP TRIGGER IF EXISTS set_timestamp ON flags;
+              CREATE TRIGGER set_timestamp BEFORE UPDATE ON flags FOR EACH ROW EXECUTE PROCEDURE trigger_set_timestamp();
+            "
+
+            echo "[TARGETING-SERVICE] Criando Banco..."
+            psql -h ${module.database.postgres_endpoints[2]} -U postgres -d postgres -c 'CREATE DATABASE targeting_db;' || true
+            psql -h ${module.database.postgres_endpoints[2]} -U postgres -d targeting_db -c "
+              CREATE TABLE IF NOT EXISTS targeting_rules (
+                  id SERIAL PRIMARY KEY,
+                  flag_name VARCHAR(100) UNIQUE NOT NULL,
+                  is_enabled BOOLEAN NOT NULL DEFAULT true,
+                  rules JSONB NOT NULL,
+                  created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+                  updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+              );
+              CREATE OR REPLACE FUNCTION trigger_set_timestamp() RETURNS TRIGGER AS \$\$ BEGIN NEW.updated_at = NOW(); RETURN NEW; END; \$\$ LANGUAGE plpgsql;
+              DROP TRIGGER IF EXISTS set_timestamp ON targeting_rules;
+              CREATE TRIGGER set_timestamp BEFORE UPDATE ON targeting_rules FOR EACH ROW EXECUTE PROCEDURE trigger_set_timestamp();
+            "
+            EOF
+          ]
+        }
+        restart_policy = "Never"
+      }
+    }
+    backoff_limit = 4
+  }
+
+  wait_for_completion = true
+  depends_on = [
+    module.database,
+    module.eks
+  ]
+}

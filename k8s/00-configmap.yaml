@@ -24,7 +24,7 @@ data:
   targeting-db-name: "targeting_db"
 
   # Configurações AWS Gerais
-  sqs-url: "https://sqs.us-east-1.amazonaws.com/797561896734/analytics-service-sqs"
+  sqs-url: "https://sqs.us-east-1.amazonaws.com/735355200877/analytics-service-sqs"
   dynamo-table: "ToggleMasterAnalytics"
   aws-region: "us-east-1"
   
